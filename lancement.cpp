@@ -5,6 +5,7 @@
 #include <math.h>
 #include <thread>
 #include <pthread.h>
+#include <vector>
 
 using namespace std;
 
@@ -17,7 +18,7 @@ double timevalsub(struct timeval *tv1, const struct timeval *tv2)
 }
 
 // Returns the duration of call
-double fct(int num, int nbtours)
+double fct(int num, int nbtours, double &temps_total_thread)
 {
   struct timeval tv1, tv2;
   int err;
@@ -52,6 +53,7 @@ double fct(int num, int nbtours)
     }
     double duree = timevalsub(&tv1, &tv2);
     temps_total += duree;
+    temps_total_thread += duree;
 
     // Version avec "cerr" si on veut voir les problèmes
     // d'entrelacement des sorties :
@@ -66,12 +68,6 @@ double fct(int num, int nbtours)
   // ###########################
 
   return temps_total;
-}
-
-void calculTemps(int i, int nbtours, double &temps_total)
-{
-  double temps_fonction = fct(i, nbtours);
-  temps_total += temps_fonction;
 }
 
 int main(int argc, char **argv)
@@ -100,10 +96,17 @@ int main(int argc, char **argv)
        << endl;
 
   double temps_total = 0;
+
+  vector<thread> listeThread;
+
   for (i = 0; i < nbthreads; i++)
   {
-    thread *tmp = new thread(calculTemps, i, nbtours, ref(temps_total));
-    tmp->join();
+    listeThread.push_back(thread(fct, i, nbtours, ref(temps_total)));
+  }
+
+  for (thread &t : listeThread)
+  {
+    t.join();
   }
 
   cout << "Th principal : Le temps total de calcul est " << temps_total << endl;
