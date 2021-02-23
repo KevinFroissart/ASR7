@@ -1,4 +1,4 @@
-CPP_SRC = mandel.cpp display.cpp main.cpp
+CPP_SRC = mandel.cpp display.cpp main.cpp ProdCons.cpp
 
 LDPATH=-L /usr/X11R6/lib/
 
