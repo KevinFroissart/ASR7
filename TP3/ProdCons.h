@@ -2,9 +2,9 @@
 #define PRODCONS_H
 #include <iostream>
 #include <mutex>
+#include <queue>
 #include <condition_variable>
 
-static const int TAILLE_LISTE = 100;
 struct rect
 {
     int slice_number;
@@ -16,17 +16,17 @@ struct rect
 class ProdCons
 {
 public:
-    ProdCons();
+    ProdCons(int taille = 10);
+    //~ProdCons();
     void put(rect e);
     rect get();
 
 private:
-    std::mutex mtx;
-    std::condition_variable_any vide;
-    std::condition_variable_any plein;
-    rect fifo[TAILLE_LISTE];
-    int premier_element = 0;
-    int nb_element = 0;
+    unsigned int taille;
+    std::queue<rect> data;
+    std::mutex mut;
+    std::condition_variable vide;
+    std::condition_variable plein;
 };
 
 #endif

@@ -1,33 +1,33 @@
 #include "ProdCons.h"
 
-ProdCons::ProdCons()
+ProdCons::ProdCons(int taille) : taille(taille), data(),
+                                 mut(),
+                                 vide(),
+                                 plein()
 {
 }
 
 void ProdCons::put(rect e)
 {
-    mtx.lock();
-    while (nb_element >= TAILLE_LISTE)
+    std::unique_lock<std::mutex> unk(mut);
+
+    while (data.size() == taille)
     {
-        plein.wait(mtx);
+        plein.wait(unk);
     }
-    fifo[(premier_element + nb_element) % TAILLE_LISTE] = e;
-    ++nb_element;
+    data.push(e);
     vide.notify_one();
-    mtx.unlock();
 }
 
 rect ProdCons::get()
 {
-    mtx.lock();
-    while (nb_element == 0)
+    std::unique_lock<std::mutex> unk(mut);
+    while (data.size() == 0)
     {
-        vide.wait(mtx);
+        vide.wait(unk);
     }
-    rect res = fifo[premier_element];
-    --nb_element;
-    ++premier_element;
+    rect result = data.front();
+    data.pop();
     plein.notify_one();
-    mtx.unlock();
-    return res;
+    return result;
 }
